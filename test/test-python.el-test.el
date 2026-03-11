@@ -31,7 +31,7 @@
    ((projectile-project-type () ((:output 'python-pip :min-occur 0)))
     (projectile-project-root (&optional dir) ((:input-matcher (lambda (_dir) t) :output "foo-project")))
     (buffer-file-name () ((:output "/home/user/project/tests/path/to/test_foo.py")))
-    (compile (command) ((:input '("pytest --color=yes --no-cov") :output 'success :occur 1))))
+    (compile (command) ((:input '("pytest --color=yes") :output 'success :occur 1))))
    (test-cockpit-test-project)))
 
 (ert-deftest test-python-get-python-test-project-command-switches ()
@@ -39,11 +39,9 @@
   (mocker-let
       ((projectile-project-type () ((:output 'python-pip)))
        (projectile-project-root (&optional dir) ((:input-matcher (lambda (_dir) t) :output "foo-project")))
-       (projectile-project-name () ((:output "foo-project")))
        (buffer-file-name () ((:output "/home/user/project/tests/path/to/test_foo.py"))))
-    (dolist (struct '(
-                      (("--cov-report=term-missing" "-mslow")
-                       "pytest --color=yes --cov foo_project --cov-report=term-missing -mslow")))
+    (dolist (struct '((("--cov=. --cov-report=term-missing" "-mslow")
+                       "pytest --color=yes --cov=. --cov-report=term-missing -mslow")))
       (let ((arglist (pop struct))
             (expected (pop struct)))
         (mocker-let
@@ -56,7 +54,7 @@
    ((projectile-project-type () ((:output 'python-pip)))
     (projectile-project-root (&optional dir) ((:input-matcher (lambda (_dir) t) :output "/home/user/project")))
     (buffer-file-name () ((:output "/home/user/project/tests/path/to/test_foo.py")))
-    (compile (command) ((:input '("pytest --color=yes --no-cov tests/path/to/test_foo.py") :output 'success :occur 1))))
+    (compile (command) ((:input '("pytest --color=yes tests/path/to/test_foo.py") :output 'success :occur 1))))
    (test-cockpit-test-module)))
 
 (ert-deftest test-python-get-python-module-no-pytest-file ()
@@ -80,12 +78,11 @@
   (mocker-let
       ((projectile-project-type () ((:output 'python-pip)))
        (projectile-project-root (&optional dir) ((:input-matcher (lambda (_dir) t) :output "bar-project")))
-       (projectile-project-name () ((:output "bar-project")))
        (buffer-file-name () ((:output "/home/user/project/path/to/test_foo.py"))))
     (dolist (struct '((("--last-failed")
-                       "pytest --color=yes --last-failed --no-cov /home/user/project/path/to/test_foo.py")
-                      (("--cov-report=term-missing")
-                       "pytest --color=yes --cov bar_project --cov-report=term-missing /home/user/project/path/to/test_foo.py")))
+                       "pytest --color=yes --last-failed /home/user/project/path/to/test_foo.py")
+                      (("--cov=. --cov-report=term-missing")
+                       "pytest --color=yes --cov=. --cov-report=term-missing /home/user/project/path/to/test_foo.py")))
       (let ((arglist (pop struct))
             (expected (pop struct)))
         (mocker-let
@@ -99,7 +96,7 @@
     (projectile-project-root (&optional dir) ((:input-matcher (lambda (_dir) t) :output "foo-project")))
     (test-cockpit-python--test-function-path () ((:output "test_foo")))
     (buffer-file-name () ((:output "/home/user/project/path/to/foo.py")))
-    (compile (command) ((:input '("pytest --color=yes --no-cov test_foo") :output 'success :occur 1))))
+    (compile (command) ((:input '("pytest --color=yes test_foo") :output 'success :occur 1))))
    (test-cockpit-test-function)))
 
 (ert-deftest test-python-get-python-test-function-command-switches ()
@@ -107,13 +104,12 @@
   (mocker-let
       ((projectile-project-type () ((:output 'python-pip)))
        (projectile-project-root (&optional dir) ((:input-matcher (lambda (_dir) t) :output "foo-bar-project")))
-       (projectile-project-name () ((:output "foo-bar-project")))
        (test-cockpit-python--test-function-path () ((:output "test_foo")))
        (buffer-file-name () ((:output "/home/user/project/path/to/foo.py"))))
     (dolist (struct '((("--last-failed")
-                       "pytest --color=yes --last-failed --no-cov test_foo")
-                      (("--cov-report=term-missing")
-                       "pytest --color=yes --cov foo_bar_project --cov-report=term-missing test_foo")))
+                       "pytest --color=yes --last-failed test_foo")
+                      (("--cov=. --cov-report=term-missing")
+                       "pytest --color=yes --cov=. --cov-report=term-missing test_foo")))
       (let ((arglist (pop struct))
             (expected (pop struct)))
         (mocker-let
@@ -126,7 +122,7 @@
       ((projectile-project-type () ((:output 'python-pip)))
        (projectile-project-root (&optional dir) ((:input-matcher (lambda (_dir) t) :output "foo-project")))
        (buffer-file-name () ((:output "/home/user/project/tests/path/to/test_foo.py")))
-       (compile (command) ((:input '("pip install -e . --no-deps && pytest --color=yes --last-failed --no-cov")
+       (compile (command) ((:input '("pip install -e . --no-deps && pytest --color=yes --last-failed")
                                    :output 'success :occur 1))))
     (test-cockpit-test-project '("--last-failed" "build_ext"))))
 
@@ -136,7 +132,7 @@
     (mocker-let ((projectile-project-type () ((:output 'python-pip)))
                  (projectile-project-root (&optional dir) ((:input-matcher (lambda (_dir) t) :output "foo-project")))
                  (buffer-file-name () ((:output "/home/user/project/tests/path/to/test_foo.py")))
-                 (compile (command) ((:input '("foo build-ext command && pytest --color=yes --last-failed --no-cov")
+                 (compile (command) ((:input '("foo build-ext command && pytest --color=yes --last-failed")
                                       :output 'success :occur 1))))
       (test-cockpit-test-project '("--last-failed" "build_ext")))))
 
@@ -145,7 +141,7 @@
   (mocker-let ((projectile-project-type () ((:output 'python-pip)))
                (projectile-project-root (&optional dir) ((:input-matcher (lambda (_dir) t) :output "foo-project")))
                (buffer-file-name () ((:output "/home/user/project/tests/path/to/test_foo.py")))
-               (compile (command) ((:input '("uv run --all-extras --all-groups pytest --color=yes --last-failed --no-cov")
+               (compile (command) ((:input '("uv run --all-extras --all-groups pytest --color=yes --last-failed")
                                     :output 'success :occur 1))))
     (test-cockpit-test-project '("--last-failed" "use-uv"))))
 
@@ -154,7 +150,7 @@
   (mocker-let ((projectile-project-type () ((:output 'python-pip)))
                (projectile-project-root (&optional dir) ((:input-matcher (lambda (_dir) t) :output "foo-project")))
                (buffer-file-name () ((:output "/home/user/project/tests/path/to/test_foo.py")))
-               (compile (command) ((:input '("uv run --all-extras --all-groups --python=3.14 pytest --color=yes --last-failed --no-cov")
+               (compile (command) ((:input '("uv run --all-extras --all-groups --python=3.14 pytest --color=yes --last-failed")
                                     :output 'success :occur 1))))
     (test-cockpit-test-project '("--last-failed" "use-uv" "--python=3.14"))))
 
@@ -163,7 +159,7 @@
   (mocker-let ((projectile-project-type () ((:output 'python-pip)))
                (projectile-project-root (&optional dir) ((:input-matcher (lambda (_dir) t) :output "foo-project")))
                (buffer-file-name () ((:output "/home/user/project/tests/path/to/test_foo.py")))
-               (compile (command) ((:input '("uv run --all-extras --all-groups --with=pandas==2.3.3 pytest --color=yes --last-failed --no-cov")
+               (compile (command) ((:input '("uv run --all-extras --all-groups --with=pandas==2.3.3 pytest --color=yes --last-failed")
                                     :output 'success :occur 1))))
     (test-cockpit-test-project '("--last-failed" "use-uv" "--with=pandas==2.3.3"))))
 
@@ -172,7 +168,7 @@
   (mocker-let ((projectile-project-type () ((:output 'python-pip)))
                (projectile-project-root (&optional dir) ((:input-matcher (lambda (_dir) t) :output "foo-project")))
                (buffer-file-name () ((:output "/home/user/project/tests/path/to/test_foo.py")))
-               (compile (command) ((:input '("uv run --all-extras --all-groups --python=3.14 --with=pandas==2.3.3 pytest --color=yes --last-failed --no-cov")
+               (compile (command) ((:input '("uv run --all-extras --all-groups --python=3.14 --with=pandas==2.3.3 pytest --color=yes --last-failed")
                                     :output 'success :occur 1))))
     (test-cockpit-test-project '("--last-failed" "use-uv" "--python=3.14" "--with=pandas==2.3.3"))))
 
@@ -181,17 +177,10 @@
   (mocker-let ((projectile-project-type () ((:output 'python-pip)))
                (projectile-project-root (&optional dir) ((:input-matcher (lambda (_dir) t) :output "foo-project")))
                (buffer-file-name () ((:output "/home/user/project/tests/path/to/test_foo.py")))
-               (compile (command) ((:input '("uv run --foo --bar pytest --color=yes --last-failed --no-cov")
+               (compile (command) ((:input '("uv run --foo --bar pytest --color=yes --last-failed")
                                     :output 'success :occur 1))))
     (let ((test-cockpit-python-uv-switches '("--foo" "--bar")))
       (test-cockpit-test-project '("--last-failed" "use-uv")))))
-
-(ert-deftest test-python-insert-no-coverage-to-switches ()
-  (dolist (struct '((("--last-failed") ("--last-failed" "--no-cov"))
-                    (("--last-failed" "--cov-report=term-missing") ("--last-failed" "--cov-report=term-missing"))))
-    (let ((arglist (pop struct))
-          (expected (pop struct)))
-      (should (equal (test-cockpit-python--insert-no-coverage-to-switches arglist) expected)))))
 
 (ert-deftest test-python-dape-last-test-project ()
   (setq test-cockpit--project-engines nil)
@@ -505,7 +494,7 @@ async def test_first_outer():
       (should (equal (car (aref (aref infix 0) 8)) "-m"))
       (should (equal (aref (aref infix 0) 9) '("-M" "test type hints" "--mypy")))
       (should (equal (aref (aref infix 1) 0) "Output"))
-      (should (equal (aref (aref infix 1) 3) '("-c" "print coverage report" "--cov-report=term-missing")))
+      (should (equal (aref (aref infix 1) 3) '("-c" "print coverage report" "--cov=. --cov-report=term-missing")))
       (should (equal (aref (aref infix 1) 4) '("-r" "report output of passed tests" "-rFP")))
       (should (equal (aref (aref infix 1) 5) '("-w" "don't output warnings" "--disable-warnings")))
       (should (equal (aref (aref infix 1) 6) '("-n" "don't capture output" "--capture=no")))

@@ -109,30 +109,8 @@
           (test-cockpit--add-leading-space-to-switches
            (string-join (seq-remove (lambda (elt) (or (member elt '("use-uv" "build_ext"))
                                                       (test-cockpit-python--arg-uv-prepended-p elt)))
-                                    (test-cockpit-python--insert-project-coverage-to-switches
-                                     (test-cockpit-python--insert-no-coverage-to-switches args)))
+                                    args)
                         " "))))
-
-(defun test-cockpit-python--insert-no-coverage-to-switches (switches)
-  "Adjust the coverage report switch according to SWITCHES."
-  (if (not (seq-find (lambda (sw) (string-prefix-p "--cov-report=" sw)) switches))
-      (append switches '("--no-cov"))
-    switches))
-
-(defun test-cockpit-python--coverage-project-switch ()
-  "Make the switch `--cov <projectname>'."
-  (list (string-join `("--cov " ,(string-replace "-" "_" (projectile-project-name))))))
-
-(defun test-cockpit-python--insert-project-coverage-to-switches (switches)
-  "Adjust the coverage report switch according to SWITCHES."
-  (seq-reduce (lambda (acc sw)
-                (append
-                 (if (string-prefix-p "--cov-report=" sw)
-                     (append acc (test-cockpit-python--coverage-project-switch))
-                   acc)
-                 (list sw)))
-              switches
-              '()))
 
 (transient-define-argument test-cockpit-python--restrict-substring ()
   :description "Restrict to tests matching string"
@@ -210,7 +188,7 @@
    ["Output"
     (test-cockpit-python--choose-verbose-level)
     (test-cockpit-python--choose-loglevel)
-    ("-c" "print coverage report" "--cov-report=term-missing")
+    ("-c" "print coverage report" "--cov=. --cov-report=term-missing")
     ("-r" "report output of passed tests" "-rFP")
     ("-w" "don't output warnings" "--disable-warnings")
     ("-n" "don't capture output" "--capture=no")

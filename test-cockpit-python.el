@@ -188,7 +188,7 @@
    ["Output"
     (test-cockpit-python--choose-verbose-level)
     (test-cockpit-python--choose-loglevel)
-    ("-c" "print coverage report" "--cov=. --cov-report=term-missing")
+    ("-c" "print coverage report" "--cov --cov-report=term-missing")
     ("-r" "report output of passed tests" "-rFP")
     ("-w" "don't output warnings" "--disable-warnings")
     ("-n" "don't capture output" "--capture=no")
